@@ -1,10 +1,9 @@
 import requests
 import telegram
-import time
 
-# توكن البوت ومعرفك
-TOKEN = "7417533427:AAFiHzYJRluoH7q1jkzoR9SqKZeovUzBrME"
-CHAT_ID = 7420171743
+# بيانات البوت
+TOKEN = "8043979447:AAEWXwV6jLBmPIdainBooX6FjcjxO3690Gw"
+CHAT_ID = 7420171743  # معرّفك في تليجرام
 bot = telegram.Bot(token=TOKEN)
 
 def get_prices():
@@ -12,11 +11,11 @@ def get_prices():
         gold = requests.get("https://api.metals.live/v1/spot/gold").json()[0]['gold']
         silver = requests.get("https://api.metals.live/v1/spot/silver").json()[0]['silver']
         bitcoin = requests.get("https://api.coindesk.com/v1/bpi/currentprice/BTC.json").json()['bpi']['USD']['rate']
-        bitcoin = float(bitcoin.replace(',', ''))
-        gas = requests.get("https://api.tradingeconomics.com/commodities/natural-gas?c=guest:guest").json()[0]['Last']
+        bitcoin = float(bitcoin.replace(",", ""))
+        gas = requests.get("https://api.tradingeconomics.com/commodities/natural-gas?c=guest:guest").json()[0]['Price']
         return float(gold), float(silver), bitcoin, gas
     except Exception as e:
-        print("خطأ في جلب البيانات:", e)
+        print("حدث خطأ أثناء جلب الأسعار:", e)
         return None, None, None, None
 
 def send_signal():
@@ -24,17 +23,17 @@ def send_signal():
 
     if gold and silver and bitcoin and gas:
         message = f"""
-<b>توصيات اليوم (الأسعار الحقيقية):</b>
+<b><span style="color:#FFD700;">توصيات التداول (واقعية حالياً):</span></b>
 
-شراء <b><span style="color:#FFD700;">الذهب</span></b>: {gold} دولار
-شراء <b><span style="color:#1E90FF;">الغاز</span></b>: {gas} دولار
-شراء <b><span style="color:#FFA500;">البيتكوين</span></b>: {bitcoin} دولار
-بيع <b><span style="color:#FFFFFF;">الفضة</span></b>: {silver} دولار
+<b>الذهب:</b> <span style="color:#FFD700;">{gold}</span>
+<b>الفضة:</b> <span style="color:#C0C0C0;">{silver}</span>
+<b>البيتكوين:</b> <span style="color:#FFA500;">{bitcoin}</span>
+<b>الغاز:</b> <span style="color:#00FFFF;">{gas}</span>
 """
         try:
             bot.send_message(chat_id=CHAT_ID, text=message, parse_mode=telegram.ParseMode.HTML)
-            print("تم إرسال التوصيات بنجاح.")
         except Exception as e:
-            print("فشل إرسال الرسالة:", e)
+            print("فشل في إرسال التوصية:", e)
 
+# إرسال التوصية
 send_signal()
