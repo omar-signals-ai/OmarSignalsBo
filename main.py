@@ -2,23 +2,18 @@ import requests
 import telegram
 
 # بيانات البوت
-TOKEN = "توكن_البوت_هنا"
+TOKEN = "8043979447:AAEWXwV6jLBmPIdainBooX6FjcjxO3690Gw"
 CHAT_ID = 7420171743
 bot = telegram.Bot(token=TOKEN)
 
 def get_prices():
     try:
-        # أسعار الذهب والفضة (من موقع سريع)
         metals = requests.get("https://api.metals.live/v1/spot").json()
         gold = metals[0]['gold']
         silver = metals[0]['silver']
 
-        # سعر البيتكوين من CoinDesk
         bitcoin = requests.get("https://api.coindesk.com/v1/bpi/currentprice/BTC.json").json()['bpi']['USD']['rate_float']
-
-        # سعر الغاز الطبيعي من Trading Economics
-        gas = requests.get("https://api.tradingeconomics.com/commodities/natural-gas?c=guest:guest")
-        gas = gas.json()[0]['Last']
+        gas = requests.get("https://api.tradingeconomics.com/commodities/natural-gas?c=guest:guest").json()[0]['Last']
 
         return gold, silver, bitcoin, gas
     except Exception as e:
