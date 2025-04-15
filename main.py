@@ -8,11 +8,19 @@ bot = telegram.Bot(token=TOKEN)
 
 def get_prices():
     try:
-        gold = requests.get("https://metals-api.com/api/latest?access_key=demo&base=USD&symbols=XAU").json()['rates']['XAU']
-        silver = requests.get("https://metals-api.com/api/latest?access_key=demo&base=USD&symbols=XAG").json()['rates']['XAG']
-        bitcoin = requests.get("https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd").json()['bitcoin']['usd']
-        gas = requests.get("https://commodities-api.com/api/latest?access_key=demo&base=USD&symbols=NG").json()['data']['rates']['NG']
-        return gold, silver, bitcoin, gas
+        # سعر الذهب والفضة من Metals.Dev
+        metals = requests.get("https://api.metals.dev/v1/latest").json()
+        gold = metals['metals']['gold']
+        silver = metals['metals']['silver']
+
+        # سعر البيتكوين من CoinCap
+        bitcoin = requests.get("https://api.coincap.io/v2/assets/bitcoin").json()['data']['priceUsd']
+
+        # سعر الغاز الطبيعي من Commodities-API
+        gas_data = requests.get("https://commodities-api.com/api/latest?base=USD&symbols=NG").json()
+        gas = gas_data['data']['rates']['NG']
+
+        return gold, silver, float(bitcoin), gas
     except Exception as e:
         print("حدث خطأ في جلب البيانات:", e)
         return None, None, None, None
@@ -25,7 +33,7 @@ def send_signal():
 
 <b>الذهب:</b> <span style="color:#FFD700;">{gold}</span>
 <b>الفضة:</b> <span style="color:#C0C0C0;">{silver}</span>
-<b>البيتكوين:</b> <span style="color:#FFA500;">{bitcoin}</span>
+<b>البيتكوين:</b> <span style="color:#FFA500;">{bitcoin:.2f}</span>
 <b>الغاز:</b> <span style="color:#00FFFF;">{gas}</span>
 """
         try:
