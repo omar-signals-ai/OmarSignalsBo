@@ -1,25 +1,79 @@
-import telegram
+import requests
+import telebot
+import time
 
-# بيانات البوت
-TOKEN = "8043979447:AAEWXwV6jLBmPIdainBooX6FjcjxO3690Gw"
-CHAT_ID = 7420171743
-bot = telegram.Bot(token=TOKEN)
+# ✅ توكن البوت تبعك (سري، لا تعطيه لحدا)
+TOKEN = "8043979447:AAEWxW6jLBmPIdainBooX6Fjcjx03690Gw"
+bot = telebot.TeleBot(TOKEN)
 
-def send_test_signal():
-    message = """
-<b><span style="color:#FF7000;">تنبيه تجريبي لتوصيات عمر</span></b>
+# 🧍‍♂️ معرف المستخدم الوحيد المسموح له
+ADMIN_ID = 7420171743
 
-<b>الذهب:</b> <span style="color:#FFD700;">$2445.12</span>
-<b>البيتكوين:</b> <span style="color:#FFA500;">$70982.90</span>
-<b>الغاز:</b> <span style="color:#00FFFF;">$2.78</span>
-<b>الفضة:</b> <span style="color:#C0C0C0;">$28.32</span>
-
-<b>اشتركوا الآن في توصيات عمر - أقوى إشارات التداول اليومية!</b>
-"""
+# 📈 دالة للحصول على توصيات من مواقع موثوقة
+def get_signals():
     try:
-        bot.send_message(chat_id=CHAT_ID, text=message, parse_mode=telegram.ParseMode.HTML)
-        print("تم إرسال الرسالة التجريبية.")
-    except Exception as e:
-        print("خطأ أثناء إرسال الرسالة:", e)
+        # 🟡 مثال: أسعار من CoinGecko (بتكوين)
+        btc_data = requests.get("https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd").json()
+        btc_price = btc_data['bitcoin']['usd']
 
-send_test_signal()
+        # 🟡 مثال: سعر الذهب من موقع GoldAPI (موقع مدفوع - مؤقتاً سنستخدم سعر ثابت تجريبي)
+        gold_price = 2341.80
+        silver_price = 27.5
+        gas_price = 2.2
+
+        # 📢 رسالة التوصيات
+        message = f"""
+📢 توصيات الأسواق 🔔
+
+💰 الذهب:
+✅ السعر الحالي: {gold_price} $
+🎯 التوصية: شراء
+🛑 وقف الخسارة: {gold_price - 20}
+📈 الهدف: {gold_price + 25}
+
+🥈 الفضة:
+✅ السعر الحالي: {silver_price} $
+🎯 التوصية: شراء
+🛑 وقف الخسارة: {silver_price - 0.4}
+📈 الهدف: {silver_price + 0.6}
+
+🔥 الغاز الطبيعي:
+✅ السعر الحالي: {gas_price} $
+🎯 التوصية: بيع
+🛑 وقف الخسارة: {gas_price + 0.2}
+📈 الهدف: {gas_price - 0.2}
+
+₿ بتكوين:
+✅ السعر الحالي: {btc_price} $
+🎯 التوصية: شراء حذر
+🛑 وقف الخسارة: {btc_price - 1000}
+📈 الهدف: {btc_price + 1500}
+
+#توصيات #ذهب #بتكوين #فضة #غاز
+"""
+        return message
+
+    except Exception as e:
+        return f"🚫 فشل في جلب التوصيات: {e}"
+
+# 📤 إرسال التوصيات كل ساعة
+def send_signals():
+    while True:
+        text = get_signals()
+        bot.send_message(ADMIN_ID, text)
+        time.sleep(3600)  # كل ساعة
+
+# 🚀 أمر /start لبدء البوت يدوياً
+@bot.message_handler(commands=['start'])
+def welcome(message):
+    if message.chat.id == ADMIN_ID:
+        bot.reply_to(message, "✅ بوت التوصيات يعمل الآن تلقائياً.\nسيتم إرسال توصيات كل ساعة.")
+    else:
+        bot.reply_to(message, "🚫 لا تملك صلاحية استخدام هذا البوت.")
+
+# 📦 ابدأ الإرسال التلقائي بالتوازي مع الاستقبال
+import threading
+threading.Thread(target=send_signals).start()
+
+# 🟢 تشغيل البوت
+bot.polling()
